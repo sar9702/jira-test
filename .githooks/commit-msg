@@ -1,0 +1,23 @@
+#!/bin/sh
+
+MSG_FILE=$1
+MSG=$(cat "$MSG_FILE")
+
+# 이미 JIRA 티켓 있으면 아무 것도 안 함
+if echo "$MSG" | grep -qE '^[A-Z]+-[0-9]+'; then
+  exit 0
+fi
+
+# 현재 브랜치 이름
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+# 브랜치에서 JIRA 티켓 추출
+TICKET=$(echo "$BRANCH" | grep -oE '[A-Z]+-[0-9]+' | head -n 1)
+
+# 티켓 없으면 패스
+if [ -z "$TICKET" ]; then
+  exit 0
+fi
+
+# 커밋 메시지 앞에 티켓 붙이기
+echo "$TICKET $MSG" > "$MSG_FILE"
